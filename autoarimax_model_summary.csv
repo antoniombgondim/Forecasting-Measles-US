@@ -1,0 +1,2 @@
+model,forecast_count_year,partial_2026_observed_date,partial_2026_observed_cumulative_cases,full_year_2026_forecast_date,raw_forecast_cumulative_cases,forecast_cumulative_cases,raw_forecast_2026_cases_implied,forecast_2026_cases_implied,ci_lower_95,ci_upper_95,aic,order,n_scored,mae,rmse
+AutoARIMAX cumulative,2026,2026-05-01,84565.0,2026-12-31,84477.88777065172,84565.0,1726.8877706517233,1814.0,83720.3460699683,85242.28407066748,-219.1864707143821,"(1, 0, 1)",30,275.47125552486347,667.7369109698161

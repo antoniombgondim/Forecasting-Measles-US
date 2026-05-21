@@ -1,0 +1,2 @@
+model,forecast_count_year,partial_2026_observed_date,partial_2026_observed_cumulative_cases,full_year_2026_forecast_date,raw_forecast_cumulative_cases,forecast_cumulative_cases,raw_forecast_2026_cases_implied,forecast_2026_cases_implied,ci_lower_95,ci_upper_95,aic,mae,rmse
+Poisson cumulative,2026,2026-05-01,84565.0,2026-12-31,82841.77715625869,84565.0,90.77715625868586,1814.0,82278.67314904768,84565.0,405.6312278697733,64.60330704601657,83.84633219294177
