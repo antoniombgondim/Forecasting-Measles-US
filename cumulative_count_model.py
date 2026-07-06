@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
-from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 
 ROOT = Path(__file__).resolve().parent
@@ -18,6 +17,12 @@ EXOG_COLS = [
     "outbreak_2019",
     "outbreak_2025",
 ]
+VALIDATION_NOTE = (
+    "Out-of-sample validation is limited by reliance on a single held-out "
+    "2026 observation; model performance should be interpreted cautiously "
+    "and supplemented with leave-one-out cross-validation or additional "
+    "hold-out exercises for outbreak years such as 2019 and 2025."
+)
 
 
 def create_features(df, base_year):
@@ -29,6 +34,15 @@ def create_features(df, base_year):
     df["outbreak_2019"] = (years >= 2019).astype(int)
     df["outbreak_2025"] = (years >= 2025).astype(int)
     return df
+
+
+def mean_absolute_error(observed, predicted):
+    return float(np.mean(np.abs(np.asarray(observed) - np.asarray(predicted))))
+
+
+def root_mean_squared_error(observed, predicted):
+    error = np.asarray(observed) - np.asarray(predicted)
+    return float(np.sqrt(np.mean(error**2)))
 
 
 def prepare_data():
@@ -225,11 +239,9 @@ def run_cumulative_count_model(model_key):
         train_features["cumulative_cases"],
         train_features["fitted_cumulative_cases"],
     )
-    rmse = np.sqrt(
-        mean_squared_error(
-            train_features["cumulative_cases"],
-            train_features["fitted_cumulative_cases"],
-        )
+    rmse = root_mean_squared_error(
+        train_features["cumulative_cases"],
+        train_features["fitted_cumulative_cases"],
     )
 
     cumulative_through_2025 = float(history["cumulative_cases"].iloc[-1])
@@ -280,6 +292,7 @@ def run_cumulative_count_model(model_key):
                 "converged": converged,
                 "mae": mae,
                 "rmse": rmse,
+                "validation_note": VALIDATION_NOTE,
             }
         ]
     )
@@ -327,6 +340,7 @@ def run_cumulative_count_model(model_key):
         ("Converged", str(converged)),
         ("Training MAE", mae),
         ("Training RMSE", rmse),
+        ("Validation note", VALIDATION_NOTE),
         ("Partial 2026 observed date", PARTIAL_2026_OBSERVED_DATE),
         ("Partial 2026 observed cumulative cases", partial_2026_cumulative),
         ("Full-year 2026 forecast date", FULL_YEAR_2026_FORECAST_DATE),
@@ -344,7 +358,7 @@ def run_cumulative_count_model(model_key):
             f"\\caption{{{settings['caption']}}}",
             f"\\label{{{settings['table_label']}}}",
             "\\small",
-            "\\begin{tabular}{lr}",
+            "\\begin{tabular}{p{0.34\\linewidth}p{0.56\\linewidth}}",
             "\\toprule",
             "Quantity & Value \\\\",
             "\\midrule",

@@ -2,7 +2,15 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+
+
+def mean_absolute_error(observed, predicted):
+    return float(np.mean(np.abs(np.asarray(observed) - np.asarray(predicted))))
+
+
+def root_mean_squared_error(observed, predicted):
+    error = np.asarray(observed) - np.asarray(predicted)
+    return float(np.sqrt(np.mean(error**2)))
 
 # ----------------------------------------------------
 # Load and prepare the data
@@ -24,6 +32,12 @@ data = data[data["year"] <= 2026]
 forecast_count_year = 2026
 partial_2026_observed_date = pd.Timestamp("2026-05-01")
 full_year_2026_forecast_date = pd.Timestamp("2026-12-31")
+validation_note = (
+    "Out-of-sample validation is limited by reliance on a single held-out "
+    "2026 observation; model performance should be interpreted cautiously "
+    "and supplemented with leave-one-out cross-validation or additional "
+    "hold-out exercises for outbreak years such as 2019 and 2025."
+)
 observed_2026_cases = data.loc[
     data["year"] == forecast_count_year,
     "cases",
@@ -263,11 +277,9 @@ mae = mean_absolute_error(
     train_features["fitted_cumulative_cases"],
 )
 
-rmse = np.sqrt(
-    mean_squared_error(
-        train_features["cumulative_cases"],
-        train_features["fitted_cumulative_cases"],
-    )
+rmse = root_mean_squared_error(
+    train_features["cumulative_cases"],
+    train_features["fitted_cumulative_cases"],
 )
 
 print(f"\nTraining MAE: {mae:.2f}")
@@ -320,6 +332,7 @@ model_summary = pd.DataFrame(
             "aic": float(poisson_results.aic),
             "mae": mae,
             "rmse": rmse,
+            "validation_note": validation_note,
         }
     ]
 )
@@ -340,6 +353,7 @@ latex_rows = [
     ("AIC", poisson_results.aic),
     ("Training MAE", mae),
     ("Training RMSE", rmse),
+    ("Validation note", validation_note),
     ("Partial 2026 observed date", partial_2026_observed_date),
     (
         "Partial 2026 observed cumulative cases",
@@ -361,7 +375,7 @@ latex_table = "\n".join(
         "\\caption{Poisson model summary and 2026 forecast.}",
         "\\label{tab:poisson_summary}",
         "\\small",
-        "\\begin{tabular}{lr}",
+        "\\begin{tabular}{p{0.34\\linewidth}p{0.56\\linewidth}}",
         "\\toprule",
         "Quantity & Value \\\\",
         "\\midrule",
