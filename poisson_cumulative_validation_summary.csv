@@ -1,0 +1,2 @@
+validation,test_set_start_year,test_set_end_year,n_scored,mae,rmse
+rolling_one_year_ahead,2016,2025,10,441.350616525572,837.7049645366403

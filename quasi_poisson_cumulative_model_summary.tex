@@ -12,7 +12,7 @@ Dispersion & 0.11 \\
 Converged & True \\
 Training MAE & 64.60 \\
 Training RMSE & 83.85 \\
-Validation note & Out-of-sample validation is limited by reliance on a single held-out 2026 observation; model performance should be interpreted cautiously and supplemented with leave-one-out cross-validation or additional hold-out exercises for outbreak years such as 2019 and 2025. \\
+Validation note & Out-of-sample validation is limited by reliance on a single held-out 2026 observation; model performance is supplemented here with rolling one-year-ahead validation on the test set starting in 2016 and ending in 2025. \\
 Partial 2026 observed date & 2026-05-01 \\
 Partial 2026 observed cumulative cases & 84,565.00 \\
 Full-year 2026 forecast date & 2026-12-31 \\
@@ -22,6 +22,11 @@ Raw forecast 2026 cases implied & 90.78 \\
 Adjusted forecast 2026 cases implied & 1,814.00 \\
 95\% CI lower & 82,656.12 \\
 95\% CI upper & 84,565.00 \\
+Test set start year & 2016 \\
+Test set end year & 2025 \\
+Rolling validation n & 10 \\
+Rolling validation MAE & 441.35 \\
+Rolling validation RMSE & 837.70 \\
 \bottomrule
 \end{tabular}
 \end{table}

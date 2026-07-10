@@ -1,5 +1,2 @@
-validation,n_scored,mae,rmse
-leave_one_out_missing_response,30,182.34581813375516,328.92035639237076
-rolling_one_year_ahead,10,496.86580001878536,682.0609546350338
-leave_one_out_missing_response_outbreak_2019_2025,2,979.450529235635,980.557278372228
-rolling_one_year_ahead_outbreak_2019_2025,2,983.0526286795283,984.3323759952507
+validation,test_set_start_year,test_set_end_year,n_scored,mae,rmse
+rolling_one_year_ahead,2016,2025,10,496.86580001878536,682.0609546350338

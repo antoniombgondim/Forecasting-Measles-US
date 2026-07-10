@@ -1,0 +1,653 @@
+
+%Time Series Forecasting of Measles Incidence in Pakistan, 2014–2024
+%Aruba Adnan, MPH1 and Olaf Berke, PhD1,2,3,4
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This is just an example/guide for you to refer to when submitting manuscripts to Frontiers, it is not mandatory to use Frontiers .cls files nor frontiers.tex  %
+% This will only generate the Manuscript, the final article will be typeset by Frontiers after acceptance.   
+%                                              %
+%                                                                                                                                                         %
+% When submitting your files, remember to upload this *tex file, the pdf generated with it, the *bib file (if bibliography is not within the *tex) and all the figures.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Version 3.4 Generated 2022/06/14 %%%
+%%% You will need to have the following packages installed: datetime, fmtcount, etoolbox, fcprefix, which are normally inlcuded in WinEdt. %%%
+%%% In http://www.ctan.org/ you can find the packages and how to install them, if necessary. %%%
+%%%  NB logo1.jpg is required in the path in order to correctly compile front page header %%%
+
+\documentclass[utf8]{FrontiersinHarvard} % for articles in journals using the Harvard Referencing Style (Author-Date), for Frontiers Reference Styles by Journal: https://zendesk.frontiersin.org/hc/en-us/articles/360017860337-Frontiers-Reference-Styles-by-Journal
+%\documentclass[utf8]{FrontiersinVancouver} % for articles in journals using the Vancouver Reference Style (Numbered), for Frontiers Reference Styles by Journal: https://zendesk.frontiersin.org/hc/en-us/articles/360017860337-Frontiers-Reference-Styles-by-Journal
+%\documentclass[utf8]{frontiersinFPHY_FAMS} % Vancouver Reference Style (Numbered) for articles in the journals "Frontiers in Physics" and "Frontiers in Applied Mathematics and Statistics" 
+
+%\setcitestyle{square} % for articles in the journals "Frontiers in Physics" and "Frontiers in Applied Mathematics and Statistics" 
+\usepackage{url,hyperref,lineno,microtype,subcaption}
+\usepackage[onehalfspacing]{setspace}
+\usepackage{booktabs}
+\usepackage{xcolor} % ensures \textcolor{blue}{...} is available for marked revisions
+\linenumbers
+
+
+\def\keyFont{\fontsize{8}{11}\helveticabold }
+\def\firstAuthorLast{Gondim {et~al.}} %use et al only if is more than 1 author
+\def\Authors{Antonio Gondim\,$^{1}$, Chidozie~W. Chukwu\,$^{2,*}$, Folashade B. Agusto\,$^{3,4*}$ and  Joshua Ologbonyo\,$^{5}$ }
+
+\def\Address{
+$^{1}$Mathematics, University of Miami, Coral Gables, Florida, USA
+\\
+$^{2}$Mathematical Sciences, Georgia Southern University, Statesboro, Georgia, USA\\
+$^{3}$Ecology and Evolutionary Biology, University of Kansas, Lawrence, Kansas USA\\
+$^4$Mathematics and Applied Mathematics, North-West University, Potchefstroom, South Africa\\
+$^{5}$Mathematics and Statistics, Mercer University, Macon, Georgia, USA  }
+\def\corrAuthor{Corresponding Author}
+\def\corrEmail{fbagusto@gmail.com and wiliam.chukwu@gmail.com }
+%\def\corrEmail{wiliam.chukwu@gmail.com }
+
+
+\begin{document}
+\onecolumn
+\firstpage{1}
+
+\title[2026 Measles Outbreak Forecast]{Insights on United States Cumulative Measles Cases During the 2026 Outbreak Using ARIMA and Generalized Linear Models} 
+
+\author[\firstAuthorLast ]{\Authors} %This field will be automatically populated
+\address{} %This field will be automatically populated
+\correspondance{} %This field will be automatically populated
+
+\extraAuth{}% If there are more than 1 corresponding author, comment this line and uncomment the next one.
+
+\maketitle
+
+
+\begin{abstract}
+We model cumulative United States measles cases using annual surveillance counts from 1985 onward and compare four forecasting specifications: a Poisson generalized linear model (GLM), a quasi-Poisson GLM, a negative binomial GLM, and an ARIMAX grid-search model for annual case counts on the log1p scale. The three count-regression models employ identical outbreak-related covariates to capture persistent shifts in cumulative disease burden, while the ARIMAX grid-search model additionally incorporates serial dependence. The 2026 observation is withheld from model estimation and used as an out-of-sample validation point based on cumulative cases reported through May~1,~2026. The Poisson, quasi-Poisson, and negative binomial models produce nearly identical fitted trajectories and forecasting results, reflecting the negligible estimated dispersion in the negative binomial specification and the shared mean structure of the count-regression approaches. Among these models, the Poisson GLM provides the strongest in-sample fit according to standard information criteria. In contrast, the ARIMAX grid-search model yields the most accurate held-out forecast for 2026, indicating that temporal dependence contributes valuable information for short-term prediction. Despite these differences, all four models underestimate the cumulative measles burden already observed during the first four months of 2026. This systematic underprediction suggests that the ongoing 2026 resurgence cannot be adequately represented as a continuation of the 2025 outbreak effect alone. Instead, the evidence indicates that 2026 constitutes a distinct and potentially more severe outbreak regime. Consequently, future forecasting efforts should incorporate a dedicated 2026 outbreak indicator or explicitly model the 2025--2026 period as a broader outbreak phase. Given that the forecasted annual burden was effectively reached by May~1,~2026, current evidence further suggests that the final cumulative burden in 2026 will substantially exceed that observed during the 2025 outbreak.
+
+\tiny
+ \keyFont{ \section{Keywords:} Measles, Poisson Regression, Negative Binomial Regression, ARIMAX, Time Series Analysis, Outbreak Prediction,
+Public Health} 
+\end{abstract}
+
+
+
+\section{Introduction}
+Measles remains one of the most contagious vaccine-preventable infectious diseases worldwide despite the availability of a highly effective vaccine. Although endemic measles transmission was declared eliminated in the United States in 2000, imported infections and subsequent outbreaks continue to occur, particularly in communities with suboptimal vaccination coverage \citep{cdc2002measles2000,fiebelkorn2010postelimination}. Over the post-elimination period, the U.S. measles time series is characterized by generally low annual incidence punctuated by intermittent outbreak years, often driven by importations and clusters of under-vaccinated populations \citep{cdc2002measles2000,fiebelkorn2010postelimination}. Notable resurgences in recent years, including outbreaks in 2014, 2019, 2025, and 2026, have raised concerns about declining vaccination coverage, increased international travel, vaccine hesitancy, and the accumulation of susceptible individuals within certain communities.
+
+Accurate forecasting of measles incidence is critical for public health preparedness and resource allocation. Reliable forecasts can provide early warning signals for potential outbreaks, support surveillance systems, and inform targeted vaccination and containment strategies. Given the increasing irregularity of measles outbreaks and their dependence on both epidemiological and social drivers, there is a growing need for statistical approaches capable of capturing temporal dynamics and abrupt changes in transmission patterns.
+
+Traditional infectious disease forecasting approaches include mechanistic compartmental epidemic models, generalized linear models, and time-series methods such as autoregressive integrated moving average (ARIMA) models. While mechanistic models provide insight into transmission processes, statistical forecasting models are often more suitable for short-term prediction when surveillance data are readily available and when underlying transmission mechanisms are difficult to quantify precisely.
+
+Count-regression models are particularly natural for infectious disease surveillance data because reported cases are nonnegative integers. Poisson generalized linear models (GLMs) provide a standard baseline framework for modeling such count data and interpreting multiplicative effects of covariates \citep{mccullagh1989glm}. However, infectious disease data frequently exhibit overdispersion, for which negative binomial regression provides a flexible extension \citep{hilbe2011negative}. These models and their variants have been widely used in outbreak detection and surveillance contexts, including Poisson- and negative binomial-based approaches for monitoring deviations from expected incidence patterns \citep{farrington1996outbreak,held2005surveillance,liboschik2017tscount}.
+
+\subsection{Existing literature}
+Forecasting infectious disease incidence has become an important component of modern public health surveillance. Numerous statistical and mathematical approaches have been developed to predict disease burden, assess outbreak risk, and support intervention planning. For measles specifically, forecasting efforts have ranged from mechanistic transmission models to purely statistical time-series methods.
+
+Early studies focused primarily on compartmental epidemic models that incorporated susceptible, exposed, infectious, and recovered populations to investigate measles transmission dynamics and vaccination strategies. Anderson and May \cite{anderson1991} demonstrated the importance of herd immunity thresholds and vaccination coverage in determining long-term measles persistence. Subsequent studies extended these approaches by incorporating age structure, seasonality, spatial heterogeneity, and stochastic transmission effects.
+
+In North America, several investigations have examined measles resurgence following the elimination era. Fiebelkorn et al. \cite{fiebelkorn2010postelimination} analyzed post-elimination measles outbreaks in the United States and emphasized the role of imported infections and under-vaccinated communities. Patel et al. \cite{patel2019} documented the largest U.S. measles outbreak since 1992 and highlighted the vulnerability of communities with declining vaccine uptake. More recent reports from the Centers for Disease Control and Prevention (CDC) have documented substantial increases in measles incidence during 2025 and 2026, raising renewed concerns regarding outbreak persistence and the erosion of herd immunity \cite{mathis2025measles,cdc2026cases}.
+
+From a forecasting perspective, generalized linear models have been widely used for infectious disease surveillance because disease counts are naturally represented as nonnegative integer-valued outcomes \cite{mccullagh1989glm}. Poisson regression remains a common baseline approach for modeling expected disease counts and assessing the influence of explanatory variables. However, infectious disease data frequently exhibit overdispersion, leading researchers to adopt Negative Binomial models that provide greater flexibility in variance modeling \cite{hilbe2011}. Negative Binomial regression has been shown to outperform Poisson regression in many epidemiological applications where disease incidence exhibits substantial variability and outbreak-driven spikes. ARIMA and SARIMA models have also been applied specifically to measles
+incidence forecasting from national surveillance data
+\citep{ojasanya2025measles}.
+
+Time-series forecasting methods have also been extensively applied to infectious disease surveillance. ARIMA and ARIMAX models have been successfully used to forecast influenza, dengue fever, COVID-19, measles, and other communicable diseases \cite{box2015,hyndman2008,hyndman2021,chukwu2026forecasting}. These models account for temporal dependence and can incorporate exogenous predictors representing environmental, demographic, or outbreak-related factors. Such approaches often provide competitive short-term forecasting performance when strong serial correlation exists within surveillance data.
+
+
+
+More recently, machine learning and hybrid forecasting frameworks have been applied to infectious disease prediction. Methods such as artificial neural networks, long short-term memory (LSTM) networks, gated recurrent units (GRUs), Prophet models, and hybrid ARIMA-machine learning frameworks have demonstrated improved predictive capabilities in several infectious disease settings. Nevertheless, these approaches often sacrifice interpretability, which remains an important consideration for public health decision-making.
+
+
+
+Despite the growing literature on infectious disease forecasting, relatively few studies have focused on forecasting cumulative measles cases in the post-elimination United States. Existing studies generally emphasize outbreak descriptions, vaccination coverage, or mechanistic transmission dynamics rather than statistical forecasting of long-term cumulative burden. Furthermore, limited attention has been given to comparing count-regression models with time-series approaches while explicitly incorporating major outbreak-related structural shifts. This gap motivates the present study.
+
+\subsection{Motivation and Research Objectives}
+The resurgence of measles in the United States in recent years highlights the need for reliable forecasting tools capable of anticipating future disease burden. Although measles was declared eliminated in the United States in 2000, repeated outbreaks have demonstrated that elimination does not guarantee permanent protection against resurgence. Declining vaccination coverage, vaccine hesitancy, international importations, and localized clusters of susceptible individuals continue to create conditions conducive to outbreaks.
+
+The primary motivation of this study is to develop and evaluate statistically rigorous forecasting models capable of quantifying and predicting future measles burden in the United States using publicly available surveillance data. Unlike annual incidence forecasting, which focuses primarily on short-term fluctuations, cumulative case forecasting provides a broader measure of long-term disease burden and captures the persistent effects of major outbreaks on national measles trends.
+
+To address this need, we compare several statistical forecasting approaches, including Poisson generalized linear models (GLMs), quasi-Poisson GLMs, negative binomial GLMs, and an ARIMAX grid-search model. These methodologies offer complementary advantages for modeling count data, accommodating departures from standard Poisson assumptions, accounting for temporal dependence, and incorporating outbreak-related structural changes in disease burden.
+
+The specific objectives of this study are:
+\begin{enumerate}
+\item To develop forecasting models for cumulative U.S. measles cases using Poisson GLM, quasi-Poisson GLM, negative binomial GLM, and an ARIMAX grid-search methodology.
+\item To quantify the effects of major outbreak periods, including the 2014, 2019, and 2025 measles resurgences, on long-term cumulative disease burden.
+\item To evaluate and compare count-regression and time-series forecasting approaches using in-sample error measures, the held-out 2026 forecast comparison, and rolling one-year-ahead validation over the 2016--2025 test period.
+\item To assess the predictive performance of competing forecasting frameworks and identify models that balance interpretability, statistical rigor, and forecasting accuracy.
+
+\item To provide evidence that can support disease surveillance, vaccination strategies, outbreak preparedness, and public-health decision making in the United States.
+\end{enumerate}
+To the best of our knowledge, this study is among the first to systematically compare count-regression and time-series forecasting approaches for cumulative measles burden in the post-elimination United States while explicitly accounting for outbreak-related structural shifts in the cumulative disease trajectory.
+In this study, we investigate the forecasting of cumulative measles burden in the United States using both count-regression and time-series approaches. Specifically, we compare Poisson generalized linear models (GLMs), quasi-Poisson GLMs, negative binomial GLMs, and an ARIMAX grid-search model that incorporates outbreak-related covariates. The count-regression models are designed to capture persistent shifts in cumulative disease burden associated with major outbreak periods, while the ARIMAX grid-search framework additionally accounts for temporal dependence in the surveillance series. By evaluating model performance using in-sample error measures, including mean squared error (MSE) and root mean squared error (RMSE), together with the held-out 2026 forecast comparison and rolling one-year-ahead validation over the 2016--2025 test period, we aim to identify forecasting approaches that provide reliable short-term predictions while maintaining statistical interpretability and relevance for public-health surveillance and decision-making. The present analysis focuses on cumulative measles cases. Let $(C_y)$ denote the number of reported measles cases in year $(y),$ and define
+
+\[
+Y_y=\sum_{j\leq y} C_j
+\]
+
+as the cumulative number of cases through year $(y).$ Because the cumulative outcome permanently retains cases from previous years, major outbreaks produce lasting upward shifts in the cumulative trajectory. This characteristic motivates the inclusion of outbreak-related level-shift indicators to capture the persistent impact of major resurgence periods on cumulative measles burden.
+%\textcolor{red}{RECHECK!!!!!!!!!}
+\subsection{Road map}
+The remainder of this paper is organized as follows. Subsection~\ref{sec:data} describes the U.S. measles surveillance data, the construction of the cumulative case series, and the preprocessing procedures used to prepare the dataset for analysis. Section~\ref{sec:methods} presents the forecasting methodologies considered in this study, including the Poisson generalized linear model (GLM), quasi-Poisson GLM, negative binomial GLM, and ARIMAX grid-search model, together with the corresponding model specifications and evaluation criteria. Section~\ref{ResultD} reports the empirical results, including parameter estimates, model diagnostics, forecasting performance measures, and the held-out validation analysis based on 2026 cumulative measles data. Comparative assessments of the competing forecasting frameworks are also presented. Section~\ref{Discusion} discusses the epidemiological and statistical implications of the findings, highlights the strengths and limitations of the proposed approaches, compares the results with existing studies, and outlines directions for future research. Finally, Sub-section~\ref{sec:conclusion} summarizes the main conclusions and their relevance for measles surveillance, outbreak preparedness, and public-health decision-making in the United States.
+
+
+
+\section{Materials and Methods}
+\subsection{Data and Time Indexing}\label{sec:data}
+The annual case series is first sorted by count year and then transformed into cumulative cases. Although the cumulative series is computed from the full available annual record, the forecasting models are trained on observations beginning in the 1996 reporting year. The 2026 observation is held out and forecasted separately. The cumulative value for count year \(y\) is plotted at January 1 of year \((y+1)\). Therefore, a point shown at January 1, 2020 corresponds to the cumulative total through the 2019 count year. This indexing convention is used only for visualization and reporting. All covariates are defined using the original epidemiological count year. For example, the 2019 outbreak indicator is activated according to \(y\geq 2019\), even though the cumulative value including 2019 cases is displayed at January 1, 2020.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Figs/poisson_cumulative_measles_cases.png}
+    \caption{Observed U.S. cumulative measles cases. The cumulative total for count year \(y\) is displayed at January 1 of year \((y+1)\).}
+    \label{fig:cumulative_cases}
+\end{figure}
+
+
+\subsubsection{Data and Extraction}
+Figure~\ref{fig:pre-cases} illustrates the end-to-end workflow for processing, modeling, and forecasting cumulative measles cases in the United States. The process begins with data collection, where annual cumulative measles surveillance records are obtained from publicly available sources such as the Centers for Disease Control and Prevention (CDC) and organized into a structured time-series dataset. The collected data then undergo preprocessing, including the identification and treatment of missing observations, removal of duplicate records, correction of inconsistencies, and verification of cumulative consistency across years.
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Images/DataEtracMea.png}
+   \caption{Workflow for data collection, preprocessing, model development, validation, and forecasting of cumulative U.S. measles cases. Model performance is assessed using MSE, RMSE, the held-out 2026 comparison, and rolling one-year-ahead validation over the 2016--2025 test period before generating forecasts and prediction intervals.}
+    \label{fig:pre-cases}
+\end{figure}
+Following preprocessing, the cleaned dataset is used for model development and evaluation. Multiple forecasting approaches are fitted to the historical cumulative measles series, including Poisson generalized linear models (GLMs), quasi-Poisson GLMs, negative binomial GLMs, and an ARIMAX grid-search model. The count-regression models incorporate outbreak-related covariates to capture persistent shifts in cumulative disease burden, while the ARIMAX grid-search model combines outbreak indicators with temporal dependence. Model performance is evaluated using in-sample forecasting metrics, including the mean squared error (MSE) and root mean squared error (RMSE), together with an out-of-sample validation exercise in which the 2026 observation is withheld from model fitting and used as a holdout forecast target. To provide broader evidence of short-term forecast performance, the models are also evaluated using rolling one-year-ahead validation over the 2016--2025 test period.
+
+The final stage of the workflow consists of forecasting future cumulative measles burden using the best-performing model. Forecasts are accompanied by 95\% prediction intervals to quantify uncertainty and provide insight into the potential range of future disease burden. This framework enables systematic comparison of alternative forecasting approaches and supports epidemiological surveillance, outbreak monitoring, and evidence-based public health decision-making.
+
+
+\subsubsection{Rationale for Model Selection}
+The forecasting models considered in this study were selected for both methodological and practical reasons. First, all four frameworks provide formal uncertainty quantification through confidence intervals or prediction intervals, which is essential for public-health decision making where uncertainty must be explicitly communicated. Reliable uncertainty estimates enable policymakers and public-health agencies to assess potential risks and prepare for a range of outbreak scenarios rather than relying solely on point forecasts.
+Second, the selected methods are well-suited to annual surveillance datasets such as the one analyzed in this study. Because annual measles surveillance data contain a relatively small number of observations, highly parameterized machine-learning approaches may be difficult to estimate reliably and may suffer from overfitting. In contrast, the selected statistical models can be estimated efficiently while maintaining interpretability and statistical rigor.
+Third, the models represent complementary forecasting philosophies. The Poisson, quasi-Poisson, and negative binomial models emphasize count-data characteristics and the estimation of outbreak-related effects, providing interpretable measures of how major resurgence periods influence cumulative disease burden. The ARIMAX grid-search model, on the other hand, focuses on exploiting temporal dependence and recent observations to improve predictive performance. Comparing these approaches, therefore, provides insight into the relative importance of outbreak-related covariates and serial dependence in forecasting cumulative measles burden.
+Lastly, the selected models have been widely applied in epidemiology, public health surveillance, and infectious disease forecasting. Their established theoretical foundations, interpretability, and ability to generate uncertainty estimates make them attractive tools for disease surveillance applications. By comparing these frameworks within a common forecasting setting, this study provides a practical assessment of their suitability for forecasting cumulative measles burden in the post-elimination United States.
+
+
+\subsection{Model Analytical Methods} 
+\subsubsection{Count-Regression Model Formulation}\label{sec:methods}
+We fit three generalized count-regression models to the cumulative outcome \(Y_y\): Poisson, quasi-Poisson, and negative binomial. All three models use the same log-linear mean structure,
+\[
+\mathbb{E}(Y_y)=\lambda_y,
+\qquad
+\log(\lambda_y)=\eta_y,
+\]
+where
+\[
+\eta_y
+=
+\alpha
++
+\gamma_{\mathrm{time}}T_y
++
+\gamma_{2014}O_{2014,y}
++
+\gamma_{2019}O_{2019,y}
++
+\gamma_{2025}O_{2025,y}.
+\]
+Equivalently,
+\[
+\lambda_y
+=
+\exp\left(
+\alpha
++
+\gamma_{\mathrm{time}}T_y
++
+\gamma_{2014}O_{2014,y}
++
+\gamma_{2019}O_{2019,y}
++
+\gamma_{2025}O_{2025,y}
+\right).
+\]
+
+Here,
+\[
+T_y=y-1996
+\]
+is the baseline cumulative time trend. The outbreak indicators are cumulative level-shift indicators:
+\[
+O_{2014,y}=
+\begin{cases}
+1, & y\geq 2014,\\
+0, & y<2014,
+\end{cases}
+\qquad
+O_{2019,y}=
+\begin{cases}
+1, & y\geq 2019,\\
+0, & y<2019,
+\end{cases}
+\]
+and
+\[
+O_{2025,y}=
+\begin{cases}
+1, & y\geq 2025,\\
+0, & y<2025.
+\end{cases}
+\]
+
+These variables do not represent one-year outbreak pulses. Instead, they reflect the fact that once cases occur during an outbreak year, they remain part of the cumulative total in all later observations. The 2019 indicator is motivated by the large 2019 U.S. measles resurgence, during which CDC reported the highest annual case count since 1992 \citep{patel2019measles}. The 2025 indicator is motivated by the large outbreak activity reported by CDC in 2025, including outbreak-associated cases in New Mexico, Oklahoma, and Texas \citep{mathis2025measles,cdc2026cases}.
+
+The three count-regression models differ only in their variance assumptions. The Poisson model assumes
+\[
+Y_y \sim \operatorname{Poisson}(\lambda_y),
+\qquad
+\operatorname{Var}(Y_y)=\lambda_y.
+\]
+
+The quasi-Poisson model keeps the same mean structure but allows the variance to be scaled by an estimated dispersion parameter \(\phi\):
+\[
+\operatorname{Var}(Y_y)=\phi\lambda_y.
+\]
+When \(\phi>1\), the quasi-Poisson model allows overdispersion relative to the Poisson model. When \(\phi<1\), it indicates underdispersion relative to the Poisson variance assumption.
+
+The negative binomial model also keeps the same log-linear mean structure but uses a quadratic mean-variance relationship:
+\[Y_y \sim \operatorname{Negative Binomial}(\lambda_y,\kappa),
+\qquad
+\operatorname{Var}(Y_y)=\lambda_y+\kappa\lambda_y^2,
+\]
+where \(\kappa\) is the negative binomial dispersion parameter. When \(\kappa\) is close to zero, the negative binomial model approaches the Poisson variance structure.
+
+Additional covariates were considered during model development. A post-elimination indicator was excluded from the final count-regression specification because the training set begins in 1996, leaving only a small number of observations before the 2000 elimination milestone. A COVID-period indicator was also evaluated but removed because it was not statistically distinguishable from zero once the baseline time trend and outbreak shifts were included.
+
+\subsubsection{ARIMAX Grid-Search Pipeline and Model Definition}
+As a fourth forecasting approach, we fit a revised ARIMAX model with external regressors. In response to reviewer concerns about the previous AutoARIMAX specification, we no longer combine first differencing with permanent post-outbreak level-shift indicators. Instead, annual measles counts are modeled on the \(\log(1+C_y)\) scale using \(d=0\), an explicit linear time trend, and a one-year outbreak pulse indicator. This follows the ARIMA modeling framework for time series with external regressors \citep{box2015,hyndman2008,hyndman2021,chukwu2025time}.
+
+The data-processing pipeline for constructing the cumulative case series and assigning plotting dates is the same as for the count-regression models. Annual cases are sorted by count year, cumulative cases are computed for reporting purposes, and the plotting date is assigned as January 1 of the following year. For count year 2026, the observed partial-year cumulative value is indexed at May 1, 2026. The ARIMAX grid-search model is trained on count years 1996--2025, and the 2026 full-year cumulative forecast is displayed at December 31, 2026.
+
+Let \(C_y\) denote annual measles cases in count year \(y\). The modeled response is
+\[
+Z_y=\log(1+C_y).
+\]
+The revised ARIMAX model combines a regression mean with an autoregressive error process. Specifically,
+\[
+Z_y
+=
+\beta_1 \text{time}_y
++
+\beta_2 \text{major\_outbreak}_y
++
+u_y,
+\]
+where \(u_y\) is the serially correlated regression error,
+\[
+\text{time}_y = y - 1996,
+\]
+and
+\[
+\text{major\_outbreak}_y = \mathbf{1}\{y \in \{2014,2025\}\}.
+\]
+The outbreak term is therefore a one-year pulse indicator, not a permanent post-outbreak level shift, which addresses the redundancy between differencing and level-shift indicators identified in the previous specification. \textcolor{blue}{We retained only the 2014 and 2025 pulses in the ARIMAX model. Although the count-regression models use a separate 2019 outbreak-shift indicator, adding a distinct 2019 pulse to the ARIMAX specification led to parameter-identifiability problems: with only annual observations and a short series, the additional pulse was weakly identified and highly collinear with the autoregressive dynamics and the estimated time trend, producing unstable coefficients and inflated standard errors. We therefore adopted the more parsimonious two-pulse specification, in which the 2019 resurgence is absorbed by the autoregressive error process rather than by a dedicated indicator.}
+
+Candidate models were evaluated using an explicit grid search over \(\operatorname{ARIMAX}(k,0,0)\) and \(\operatorname{ARIMAX}(n,0,m)\) specifications, rather than automatic stepwise order selection. The final selected model was \(\operatorname{ARIMAX}(2,0,0)\), so the selected error process is
+\[
+u_y
+=
+\phi_1 u_{y-1}
++
+\phi_2 u_{y-2}
++
+\varepsilon_y,
+\]
+where \(\varepsilon_y\) is a white-noise innovation with mean zero and constant variance. Equivalently, the fitted model can be written as
+\[
+Z_y
+=
+\beta_1 \text{time}_y
++
+\beta_2 \text{major\_outbreak}_y
++
+\phi_1\left(Z_{y-1}-\beta_1 \text{time}_{y-1}-\beta_2 \text{major\_outbreak}_{y-1}\right)
++
+\phi_2\left(Z_{y-2}-\beta_1 \text{time}_{y-2}-\beta_2 \text{major\_outbreak}_{y-2}\right)
++
+\varepsilon_y.
+\]
+This expanded form makes explicit that the autoregressive terms are applied to the regression residuals rather than to an undefined latent process. All fitted values, forecasts, and confidence intervals were obtained on the \(\log(1+C_y)\) scale for annual cases and then reconstructed into cumulative counts by transforming back with the exponential function and accumulating the resulting annual increments.
+
+\section{Forecasting Results}\label{ResultD}
+\subsection{Parameter Estimates for Count-Regression Models}
+Table~\ref{tab:poisson_parameter_uncertainty} reports the parameter estimates for the Poisson model. The retained covariates are the baseline time trend and the cumulative outbreak-shift indicators for 2014, 2019, and 2025. All retained coefficients are positive and statistically significant.
+\begin{table}[h!]
+\centering
+\caption{Parameter estimates and uncertainty quantification for the Poisson model.}
+\label{tab:poisson_parameter_uncertainty}
+\tiny
+\begin{tabular}{lrrrrrrr}
+\toprule
+Parameter & Coef. & Std. Error & z-value & p-value & 95\% CI Lower & 95\% CI Upper & Exp. Coef. \\
+\midrule
+Intercept & 11.2342 & 0.0016 & 6989.3340 & $<0.001$ & 11.2311 & 11.2374 & 75677.7581 \\ 
+Time trend & 0.0011 & 0.0002 & 6.8639 & $<0.001$ & 0.0008 & 0.0014 & 1.0011 \\
+2014 outbreak shift & 0.0111 & 0.0026 & 4.2896 & $<0.001$ & 0.0060 & 0.0161 & 1.0111 \\
+2019 outbreak shift & 0.0179 & 0.0023 & 7.6974 & $<0.001$ & 0.0133 & 0.0225 & 1.0181 \\
+2025 outbreak shift & 0.0286 & 0.0038 & 7.5161 & $<0.001$ & 0.0211 & 0.0361 & 1.0290 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Because the count-regression models use a log link, exponentiated coefficients are multiplicative effects. For example,
+\[
+\exp(0.0286)\approx 1.0290,
+\]
+so the 2025 outbreak shift corresponds to an estimated 2.90\% multiplicative increase in the expected cumulative total, holding the other covariates fixed.
+
+Table~\ref{tab:quasi_poisson_parameter_uncertainty} reports the quasi-Poisson parameter estimates. The estimated coefficients are nearly identical to the Poisson estimates because the mean structure is the same. The estimated dispersion was \(0.11\), indicating underdispersion relative to the standard Poisson variance assumption for this cumulative series.
+
+\begin{table}[h!]
+\centering
+\caption{Parameter estimates and uncertainty quantification for the quasi-Poisson model.}
+\label{tab:quasi_poisson_parameter_uncertainty}
+\tiny
+\begin{tabular}{lrrrrrrr}
+\toprule
+Parameter & Coef. & Std. Error & z-value & p-value & 95\% CI Lower & 95\% CI Upper & Exp. Coef. \\
+\midrule
+Intercept & 11.2342 & 0.0005 & 21247.4599 & $<0.001$ & 11.2332 & 11.2353 & 75677.7581 \\
+Time trend & 0.0011 & 0.0001 & 20.8661 & $<0.001$ & 0.0010 & 0.0012 & 1.0011 \\
+2014 outbreak shift & 0.0111 & 0.0008 & 13.0404 & $<0.001$ & 0.0094 & 0.0127 & 1.0111 \\
+2019 outbreak shift & 0.0179 & 0.0008 & 23.3999 & $<0.001$ & 0.0164 & 0.0194 & 1.0181 \\
+2025 outbreak shift & 0.0286 & 0.0013 & 22.8489 & $<0.001$ & 0.0261 & 0.0311 & 1.0290 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The estimated quasi-Poisson dispersion parameter was approximately 0.11, indicating pronounced underdispersion relative to the Poisson assumption. This is expected when the modeled outcome is a cumulative count. Cumulative measles cases form a smooth, monotonically increasing trajectory in which each annual value differs from the previous one by a comparatively small increment. Consequently, the observed year-to-year variability is far smaller than the variability implied by a Poisson distribution whose variance equals its large cumulative mean, driving the estimated dispersion below one. This underdispersion is therefore a structural consequence of modeling cumulative rather than incident counts.
+
+
+Table~\ref{tab:negative_binomial_parameter_uncertainty} reports the negative binomial parameter estimates. The fitted coefficients are nearly identical to the Poisson and quasi-Poisson estimates. The estimated dispersion parameter was close to zero and not statistically significant, indicating that the negative binomial fit did not materially depart from the Poisson model for this cumulative series.
+
+\begin{table}[h!]
+\centering
+\caption{Parameter estimates and uncertainty quantification for the negative binomial model.}
+\label{tab:negative_binomial_parameter_uncertainty}
+\tiny
+\begin{tabular}{lrrrrrrr}
+\toprule
+Parameter & Coef. & Std. Error & z-value & p-value & 95\% CI Lower & 95\% CI Upper & Exp. Coef. \\
+\midrule
+Intercept & 11.2342 & 0.0016 & 6989.2220 & $<0.001$ & 11.2311 & 11.2374 & 75677.3694 \\
+Time trend & 0.0011 & 0.0002 & 6.8668 & $<0.001$ & 0.0008 & 0.0014 & 1.0011 \\
+2014 outbreak shift & 0.0111 & 0.0026 & 4.2917 & $<0.001$ & 0.0060 & 0.0161 & 1.0111 \\
+2019 outbreak shift & 0.0179 & 0.0023 & 7.6979 & $<0.001$ & 0.0133 & 0.0225 & 1.0181 \\
+2025 outbreak shift & 0.0286 & 0.0038 & 7.5118 & $<0.001$ & 0.0211 & 0.0360 & 1.0290 \\
+Dispersion parameter & 0.0000 & 0.0000 & 0.0149 & 0.9881 & 0.0000 & 0.0000 & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{ARIMAX Grid-Search Parameter Estimates}
+The selected ARIMAX grid-search model was \(\operatorname{ARIMAX}(2,0,0)\), with AIC equal to \(88.80\). Because the selected model contains two autoregressive terms, the first two observations were used to initialize the AR recursion, and in-sample fit metrics were therefore calculated after this two-year burn-in period. The in-sample mean absolute error was 341.24 cumulative cases, and the root mean squared error was 499.82 cumulative cases.
+
+\begin{table}[h!]
+\centering
+\caption{Parameter estimates for the revised ARIMAX grid-search model.}
+\label{tab:arimax_parameter_uncertainty}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrr}
+\toprule
+Parameter & Coef. & Std. Error & z-value & p-value & 95\% CI Lower & 95\% CI Upper \\
+\midrule
+Time trend & 0.2049 & 0.0540 & 3.7929 & $<0.001$ & 0.0990 & 0.3108 \\
+Major outbreak year & 2.1012 & 2.0635 & 1.0183 & 0.3085 & -1.9432 & 6.1456 \\
+AR(1) & 0.4136 & 0.1640 & 2.5219 & 0.0117 & 0.0922 & 0.7349 \\
+AR(2) & 0.3854 & 0.1838 & 2.0970 & 0.0360 & 0.0252 & 0.7455 \\
+$\sigma^2$ & 0.9767 & 0.2169 & 4.5024 & $<0.001$ & 0.5515 & 1.4019 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+The two autoregressive terms were statistically significant, indicating residual temporal dependence after accounting for the time trend and outbreak pulse. \textcolor{blue}{The outbreak pulse was positive but not statistically significant (p = 0.31). This imprecision is a direct consequence of parameter-identifiability limitations: only two outbreak pulses (2014 and 2025) are present in a short annual series, and their effect is partially absorbed by the autoregressive terms and the time trend, so the pulse coefficient is weakly identified. The wide interval should therefore be read as evidence that the magnitude of the outbreak effect cannot be estimated precisely from these data, not as evidence that outbreaks have no effect.} Unlike the previous AutoARIMAX specification, the revised model no longer produces implausibly large post-period coefficients. The result is summarized in Table~\ref{tab:arimax_parameter_uncertainty}.
+
+\begin{table}[h!]
+\centering
+\caption{ARIMAX order selection for AR-only candidates.}
+\label{tab:arimax_ar_order_selection}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrlcc}
+\toprule
+Order & AIC & AR p-values & Ljung--Box p-value & Ljung--Box result & All AR p-values $<0.05$ & Selected \\
+\midrule
+(0,0,0) & 133.97 & -- & $<0.001$ & autocorrelation detected & No & No \\
+(1,0,0) & 93.54 & $<0.001$ & 0.329 & no autocorrelation detected & Yes & No \\
+(2,0,0) & 88.80 & 0.0117; 0.0360 & 0.509 & no autocorrelation detected & Yes & Yes \\
+(3,0,0) & 84.72 & 0.0341; 0.5461; 0.1495 & 0.082 & no autocorrelation detected & No & No \\
+(4,0,0) & 84.39 & 0.1746; 0.5680; 0.2345; 0.5784 & 0.029 & autocorrelation detected & No & No \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+Although AR(3) and AR(4) had lower AIC values, they were not retained because one or more AR coefficients were not statistically significant, and AR(4) also showed residual autocorrelation. The selected AR-only model was \(\operatorname{ARIMAX}(2,0,0)\). The broader ARMA grid search also selected \(\operatorname{ARIMAX}(2,0,0)\), so no moving-average terms were retained.
+
+Residual diagnostics were used to assess whether meaningful autocorrelation remained after fitting the selected ARIMAX model. The Ljung--Box test showed no evidence of residual autocorrelation at lags 1, 5, or 10. The minimum Ljung--Box p-value was 0.509. Residual ACF and PACF plots are shown in Figure~\ref{fig:arimax_residual_acf_pacf}.
+
+\begin{table}[h!]
+\centering
+\caption{Ljung--Box residual autocorrelation test for the selected ARIMAX model.}
+\label{tab:arimax_ljung_box}
+\begin{tabular}{lrr}
+\toprule
+Lag & Ljung--Box statistic & p-value \\
+\midrule
+1 & 0.4365 & 0.5088 \\
+5 & 1.2476 & 0.9402 \\
+10 & 1.3903 & 0.9992 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Figs/revised_autoarimax_residual_acf_pacf.png}
+    \caption{Residual ACF and PACF plots for the selected ARIMAX grid-search model.}
+    \label{fig:arimax_residual_acf_pacf}
+\end{figure}
+
+We note that the equivalent residual ACF/PACF diagnostics for the Poisson, quasi-Poisson, and negative binomial models are not reported here because those model specifications were not part of the current revision; corresponding diagnostic plots for the three count-regression models can be added in a subsequent revision if required.
+
+\subsection{Forecast Accuracy and Held-Out 2026 Validation}
+The primary validation set consists of the held-out 2026 observation. As of May 1, 2026, the observed partial-year cumulative total was 84,565 cases. Since the 2026 observation was excluded from model training, this point provides a direct short-term validation target. Table~\ref{tab:model_accuracy_comparison} compares the four models using both in-sample training accuracy and held-out validation accuracy. The validation error is calculated using the raw model forecast, not the adjusted forecast. The adjusted forecast is reported only as a monotonicity correction because a full-year cumulative forecast cannot be lower than the cumulative total already observed by May 1, 2026.
+\begin{table}[h!]
+\centering
+\caption{Training and held-out 2026 validation accuracy across the four models.}
+\label{tab:model_accuracy_comparison}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrr}
+\toprule
+Model
+& Training MAE
+& Training RMSE
+& Raw 2026 Forecast
+& Observed 2026 Cumulative
+& Validation Absolute Error
+& Raw Implied 2026 Cases \\
+\midrule
+Poisson            & 64.60 & 83.85 & 82841.78 & 84565.00 & 1723.22 & 90.78 \\
+Quasi-Poisson      & 64.60 & 83.85 & 82841.78 & 84565.00 & 1723.22 & 90.78 \\
+Negative Binomial  & 64.78 & 83.85 & 82841.77 & 84565.00 & 1723.23 & 90.77 \\
+ARIMAX grid search & 341.24 & 499.82 & 83148.71 & 84565.00 & 1416.29 & 397.71 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+The count-regression models have substantially better in-sample accuracy than the ARIMAX grid-search model. The Poisson and quasi-Poisson models have training MAE \(=64.60\) and RMSE \(=83.85\), while the negative binomial model has training MAE \(=64.78\) and RMSE \(=83.85\). However, the held-out validation comparison reverses this ranking. The Poisson, quasi-Poisson, and negative binomial models underpredict the already observed 2026 cumulative total by approximately 1723 cases, while the ARIMAX grid-search model underpredicts it by approximately 1416 cases.
+
+This validation result indicates that the 2026 outbreak cannot be adequately represented by the 2025 outbreak coefficient alone. In the count-regression models, the 2025 cumulative outbreak shift produces a raw implied 2026 incidence of only about 91 cases. However, 1814 measles cases had already been observed in 2026 by May 1. The ARIMAX grid-search model is more responsive to the recent upward movement, with a raw implied 2026 incidence of approximately 398 cases, but it still produces a raw forecast below the already observed partial-year cumulative burden. Thus, all four models point to the same epidemiological conclusion: the 2026 outbreak is not simply a continuation of the 2025 level shift and should be modeled as a separate outbreak period once sufficient data become available (see Table~\ref{tab:model_summary_comparison}).
+
+The 2026 hold-out comparison is based on a single partial-year observation and therefore provides limited evidence of out-of-sample performance. To address this limitation, we supplemented the 2026 hold-out comparison with rolling one-year-ahead validation over the 2016--2025 test period for all four models. In this rolling-window exercise, each test year is predicted using only observations that would have been available before that year. Specifically, for a test year $y$, the model is refit using data through year $y-1$ and then used to predict the annual increment for year $y$; this procedure is repeated for each year from 2016 through 2025. For the cumulative count-regression models, the predicted annual increment is obtained as the difference between the predicted cumulative total for year $y$ and the observed cumulative total through year $y-1$. This design preserves the temporal ordering of the surveillance series and provides a more informative prospective validation exercise than a single 2026 hold-out point.
+
+\begin{table}[h!]
+\centering
+\caption{Rolling one-year-ahead validation results over the 2016--2025 test period across all four models. Errors are computed on the implied annual case increment.}
+\label{tab:rolling_validation_summary}
+\begin{tabular}{lrrrr}
+\toprule
+Model & Test years & $n$ scored & MAE & RMSE \\
+\midrule
+Poisson & 2016--2025 & 10 & 441.35 & 837.70 \\
+Quasi-Poisson & 2016--2025 & 10 & 441.35 & 837.70 \\
+Negative binomial & 2016--2025 & 10 & 441.36 & 837.71 \\
+ARIMAX grid search & 2016--2025 & 10 & 496.87 & 682.06 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The rolling-window validation results provide a common test-period comparison across the four models. The Poisson, quasi-Poisson, and negative binomial models have slightly lower rolling MAE, whereas the ARIMAX grid-search model has the lowest rolling RMSE. This pattern suggests that the count-regression models perform well for typical annual increments, while the ARIMAX model reduces the influence of larger forecast errors by incorporating recent temporal dependence. Importantly, this supplementary validation is based on the same 2016--2025 test period for all four models.
+
+
+\begin{table}[h!]
+\centering
+\caption{Model summary and 2026 forecast comparison.}
+\label{tab:model_summary_comparison}
+\tiny
+\begin{tabular}{lrrrr}
+\toprule
+Quantity & Poisson & Quasi-Poisson & Negative binomial & ARIMAX grid search \\
+\midrule
+Dispersion & NA & 0.11 & 0.00 & NA \\
+Training MAE & 64.60 & 64.60 & 64.78 & 341.24 \\
+Training RMSE & 83.85 & 83.85 & 83.85 & 499.82 \\
+Partial 2026 observed cumulative cases & 84565.00 & 84565.00 & 84565.00 & 84565.00 \\
+Raw forecast cumulative cases & 82841.78 & 82841.78 & 82841.77 & 83148.71 \\
+Adjusted forecast cumulative cases & 84565.00 & 84565.00 & 84565.00 & 84565.00 \\
+Raw forecast 2026 cases implied & 90.78 & 90.78 & 90.77 & 397.71 \\
+Adjusted forecast 2026 cases implied & 1814.00 & 1814.00 & 1814.00 & 1814.00 \\
+95\% CI lower & 82278.67 & 82656.12 & 82278.66 & 84565.00 \\
+95\% CI upper & 84565.00 & 84565.00 & 84565.00 & 85908.78 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The raw Poisson, quasi-Poisson, and negative binomial forecasts were all below the already observed partial-year cumulative total. Since a full-year cumulative forecast cannot be smaller than the cumulative total already observed by May 1, 2026, the adjusted forecast is set to 84565 cumulative cases for each of these models. This corresponds to 1814 implied 2026 cases. The raw full-year ARIMAX grid-search forecast was also below the already observed partial-year cumulative total, so the same monotonicity adjustment is applied.
+
+\subsection{Interpretation of Forecasting Results}
+
+Figures~\ref{1fig:poisson_fit}--\ref{4fig:arimax_fit} compare the fitted cumulative measles trajectories and the held-out 2026 forecasts obtained from the Poisson GLM, quasi-Poisson GLM, negative binomial GLM, and ARIMAX grid-search models, respectively. In all figures, the fitted values closely follow the observed cumulative trajectory from 1997--2025, capturing the major upward shifts associated with the 2014, 2019, and 2025 outbreak periods.
+
+Figure~\ref{1fig:poisson_fit} shows the Poisson GLM fit and forecast. The model reproduces the historical cumulative trend with high accuracy and generates relatively narrow confidence intervals. However, the forecasted 2026 cumulative burden remains substantially below the cumulative total already observed by May~1,~2026. This indicates that the outbreak effect estimated from historical data, including the 2025 outbreak indicator, is insufficient to explain the rapid increase observed during 2026.
+\begin{figure}[h!]
+    \centering
+\includegraphics[width=0.9\textwidth]{Figs/poisson_cumulative_measles_fit_ci.png}
+    \caption{Poisson fitted cumulative cases and held-out 2026 forecast with 95\% confidence interval.}
+    \label{1fig:poisson_fit}
+\end{figure}
+Figure~\ref{2fig:quasi_poisson_fit} presents the quasi-Poisson model results. Because the quasi-Poisson specification retains the same mean structure as the Poisson model, the fitted trajectory and forecast are nearly identical. The primary difference lies in the variance estimation, which adjusts for potential dispersion in the data. Nevertheless, the forecast remains well below the observed partial-year cumulative burden in 2026, leading to the same substantive conclusion as the Poisson model.
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Figs/quasi_poisson_cumulative_measles_fit_ci.png}
+    \caption{Quasi-Poisson fitted cumulative cases and held-out 2026 forecast with 95\% confidence interval.}
+    \label{2fig:quasi_poisson_fit}
+\end{figure}
+
+Figure~\ref{3fig:negative_binomial_fit} shows the negative binomial model fit and forecast. The fitted trajectory is again almost indistinguishable from those of the Poisson and quasi-Poisson models. This result is consistent with the estimated negative binomial dispersion parameter being close to zero, causing the model to effectively collapse toward the Poisson specification. Consequently, the negative binomial forecast also underestimates the already observed 2026 cumulative burden.
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Figs/negative_binomial_cumulative_measles_fit_ci.png}
+    \caption{Negative binomial fitted cumulative cases and held-out 2026 forecast with 95\% confidence interval.}
+    \label{3fig:negative_binomial_fit}
+\end{figure}
+In contrast, Figure~\ref{4fig:arimax_fit} demonstrates that the ARIMAX grid-search model produces a forecast closer to the observed cumulative total through May~1,~2026 than the count-regression models, although the raw forecast still falls short of the fully observed partial-year total. The model was fit to annual case increments on the \(\log(1+C_y)\) scale and then reconstructed into cumulative counts. Because the selected model was \(\operatorname{ARIMAX}(2,0,0)\), the first two observations were used to initialize the autoregressive recursion. By incorporating both a one-year outbreak pulse indicator and autoregressive dependence, the ARIMAX grid-search model is able to respond more effectively to the recent upward trajectory in cumulative cases than the count-regression models, although the model exhibits weaker in-sample fit as a result.
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Figs/revised_autoarimax_cumulative_forecast.png}
+    \caption{Revised ARIMAX grid-search fitted cumulative cases and held-out 2026 forecast with 95\% prediction interval.}
+    \label{4fig:arimax_fit}
+\end{figure}
+The raw 2026 cumulative forecast remained below the partial-year cumulative total already observed by May~1,~2026, so the same monotonicity adjustment described above was applied. The red marker in Figure~\ref{4fig:arimax_fit} indicates the observed cumulative total through May~1,~2026, illustrating that the forecasted year-end burden was effectively reached within the first four months of the year. Taken together, the four figures provide consistent evidence that the 2026 outbreak cannot be adequately represented as a continuation of the 2025 outbreak effect alone. While the Poisson, quasi-Poisson, and negative binomial models produce very similar forecasts, all substantially underpredict the emerging 2026 burden. The ARIMAX grid-search model performs somewhat better in the held-out validation exercise but still underestimates the observed cumulative total. These findings suggest that the 2026 outbreak represents a distinct and more severe outbreak regime, warranting the introduction of a separate 2026 outbreak indicator or a broader 2025--2026 outbreak-period effect in future forecasting models.
+
+\subsection{Implications for Future Forecasting}
+The forecasting results provide evidence that the ongoing 2026 resurgence cannot be adequately represented as a continuation of the 2025 outbreak effect alone. All four models underestimated the cumulative burden already observed by May~1,~2026, indicating that recent transmission patterns differ substantially from those represented in the historical training data. This finding suggests that the 2026 outbreak constitutes a distinct epidemiological event and may represent a structural shift in measles transmission dynamics.
+The fact that the forecasted annual burden was effectively reached within the first four months of 2026 further underscores the magnitude of the current outbreak. Consequently, future forecasting efforts should explicitly incorporate a dedicated 2026 outbreak indicator or model the 2025--2026 period as a broader outbreak regime. Additional explanatory variables, including vaccination coverage, vaccine exemption rates, population mobility, and measures of vaccine hesitancy, may also improve forecasting performance by capturing important drivers of outbreak emergence.
+
+\textcolor{blue}{Across all three count-regression models the outbreak-shift coefficients are nearly identical and statistically significant (p $<$ 0.001), corresponding to small multiplicative increases of about 1.1\%, 1.8\%, and 2.9\% for the 2014, 2019, and 2025 shifts, respectively. The estimates agree because the quasi-Poisson model shares the Poisson mean structure and the negative binomial dispersion parameter is effectively zero, so all three models collapse to the same fit. These effects should nonetheless be interpreted cautiously against the large baseline cumulative count, which is on the order of 76{,}000--85{,}000 cases: a 2--3\% multiplicative change on that baseline still represents roughly two thousand additional cases in absolute terms, while statistical significance is easy to attain given the smoothness of the cumulative series and the correspondingly small standard errors. In the revised ARIMAX model, by contrast, the one-year outbreak pulse (which retains only the 2014 and 2025 pulses) is not statistically significant and has a very wide confidence interval; this imprecision reflects parameter-identifiability limitations, since only two pulses are available in a short annual series and their effect is partly absorbed by the autoregressive terms and the trend, and it is also why a separate 2019 pulse was not retained. The count-regression models are therefore the more reliable basis for quantifying outbreak magnitude, whereas the ARIMAX model is better suited to short-term prediction.}
+
+\textcolor{blue}{Because the outbreak effect is small on the cumulative scale in the count models and imprecisely identified in the ARIMAX model, and because all four models underpredicted the 2026 incident burden (an implied 91 additional cases under the count-regression models and 398 under the ARIMAX model, against 1{,}814 already observed by May~1), we base our proposed surveillance rule on the observed annual case increment rather than on any single model's coefficient. Monitoring the cumulative total is uninformative here: the observed 2025 and 2026 cumulative totals both fell within the 95\% prediction band of every model, so a cumulative interval-breach criterion would not have flagged either year. On the annual-increment scale, however, the separation is stark. Across the 1996--2024 training window, non-outbreak years averaged approximately 111 annual cases (median 86, maximum 381), whereas the three documented U.S. resurgences are far larger, at 667 cases in 2014, 1{,}274 in 2019, and 2{,}285 in 2025. An annual increment of roughly 500 cases, equivalent to about four times the non-outbreak mean and above the largest ordinary year observed, therefore separates all three resurgence years from every non-outbreak year in the training period without misclassification, and the approximately 1{,}814 cases already reported by May~1,~2026 exceed it more than threefold. We accordingly propose a simple, model-agnostic decision rule for prospective surveillance: introduce a new outbreak-year indicator when the observed annual incident count exceeds approximately 500 cases (about four times the recent non-outbreak average), corroborated where possible by an external public-health signal such as a CDC outbreak declaration. Because this threshold is descriptive of the annual increments and does not require estimating a pulse coefficient, it sidesteps the identifiability limitation; it is calibrated on a small number of resurgence years and should be recalibrated as additional outbreak years accrue.}
+Thus, the comparative analysis demonstrates that accurate infectious disease forecasting requires a balance between statistical interpretability and predictive adaptability. While count-regression models provide valuable insights into the long-term effects of outbreak periods, time-series models offer greater flexibility in responding to rapidly changing transmission dynamics. Combining these strengths may provide a promising direction for future measles forecasting research and for the broader surveillance of vaccine-preventable diseases.
+
+\section{Discussion and Conclusions}\label{Discusion}
+\subsection{Discussions}
+This study compared four statistical frameworks for forecasting cumulative measles burden in the United States: a Poisson generalized linear model (GLM), a quasi-Poisson GLM, a negative binomial GLM, and an ARIMAX grid-search model. Collectively, the results demonstrate that each framework captures different characteristics of the surveillance data and highlight the importance of selecting models that are consistent with both the count nature of infectious disease outcomes and the temporal dependence inherent in epidemiological time series.
+
+The Poisson GLM provided a compact and interpretable description of the cumulative measles trajectory. The log-link formulation ensured positive fitted values, while exponentiated coefficients quantified multiplicative changes in cumulative disease burden. As shown in Figure~3, the model closely tracked the historical cumulative trajectory and achieved strong in-sample performance, with training MAE (=64.60) and RMSE (=83.85). The positive outbreak indicators associated with the 2014, 2019, and 2025 resurgence periods suggest persistent upward shifts in cumulative burden, which is epidemiologically plausible because cumulative counts permanently retain the effects of major outbreaks.
+
+The quasi-Poisson and negative binomial models were introduced to assess whether departures from the standard Poisson variance assumption materially affected model performance. As illustrated in Figures~4 and~5, both models produced fitted trajectories and forecasts that were nearly indistinguishable from those of the Poisson model. The quasi-Poisson model retained the same mean structure as the Poisson model, while the estimated negative binomial dispersion parameter was effectively zero and statistically insignificant, causing the negative binomial model to converge toward the Poisson specification. Consequently, all three count-regression models yielded nearly identical forecasts and in-sample accuracy measures.
+
+The ARIMAX grid-search model provided a complementary time-series perspective by combining a one-year outbreak-pulse indicator with autoregressive dependence. The selected \(\operatorname{ARIMAX}(2,0,0)\) specification indicates that recent annual measles activity contains valuable information for short-term forecasting. Although the ARIMAX grid-search model exhibited weaker in-sample performance than the count-regression models, with training MAE \(=341.24\) and RMSE \(=499.82\), it generated a more accurate held-out forecast for 2026 than the count-regression models. As shown in Figure~6, the forecasted cumulative burden of \(83,148.71\) cases was approximately \(1,416.29\) cases below the observed cumulative total of \(84,565\) reported through May~1,~2026, a smaller gap than that of the count-regression models.
+
+The held-out 2026 validation exercise provides the most important insight of this study. The Poisson, quasi-Poisson, and negative binomial models forecast approximately (82,842) cumulative cases for 2026, underestimating the cumulative total already observed by May~1,~2026 by approximately (1,723) cases. Although the ARIMAX grid-search model reduced this forecasting error, it also underpredicted the observed cumulative burden. The fact that all four models underestimated the already observed 2026 burden indicates that the current outbreak cannot be adequately represented as a continuation of the 2025 outbreak effect alone. Because this comparison relies on a single partial-year 2026 observation, we supplemented it with rolling one-year-ahead validation over the 2016--2025 test period for all four models. This validation refits each model using only data available before each test year and then evaluates the implied annual case increment for that year, thereby preserving the temporal ordering required for forecast assessment.
+
+This finding suggests the presence of a structural shift in the recent epidemiological dynamics of measles transmission in the United States. The outbreak indicators included in the models successfully captured the effects of previous resurgence periods; however, the rapid growth observed during 2026 exceeds what would be expected based solely on historical outbreak patterns. Moreover, the forecasted annual burden was effectively reached within the first four months of the year, implying that the final 2026 cumulative burden will likely surpass the 2025 outbreak by a substantial margin.
+\\~~\\
+From a public health perspective, these findings reinforce concerns regarding declining vaccination coverage, vaccine hesitancy, imported infections, and the accumulation of susceptible individuals within under-vaccinated communities. The persistence of outbreak-related effects in the cumulative series demonstrates how relatively short periods of elevated transmission can have long-term impacts on national disease burden. Consequently, forecasting frameworks that account for both count-data characteristics and temporal dependence can provide valuable support for surveillance, preparedness planning, and resource allocation.
+\\~~\\
+Therefore, the comparison reveals a tradeoff between in-sample fit and short-term predictive performance. The count-regression models provide superior historical fit and straightforward epidemiological interpretation, whereas the ARIMAX grid-search model more effectively captures recent temporal dynamics and produces more accurate short-term forecasts. Nevertheless, all four approaches lead to the same substantive conclusion: the 2026 outbreak appears to represent a distinct and more severe outbreak regime than that captured by the 2025 outbreak effect. As additional surveillance data become available, future models should incorporate a dedicated 2026 outbreak indicator or explicitly model the 2025--2026 period as a broader outbreak regime before generating forecasts for 2027 and beyond.
+\subsection{Insights from Model Comparison and Differences}
+A central contribution of this study is the comparative evaluation of four forecasting frameworks for cumulative measles burden in the United States: the Poisson GLM, quasi-Poisson GLM, negative binomial GLM, and ARIMAX grid-search model. While all four approaches were able to capture the long-term growth pattern of cumulative measles cases, important differences emerged in their forecasting behavior, predictive performance, and ability to adapt to the evolving 2026 outbreak. These differences provide valuable insights into the strengths and limitations of count-regression and time-series approaches for infectious disease forecasting.
+\\~~\\
+The Poisson, quasi-Poisson, and negative binomial models performed exceptionally well in reproducing the historical cumulative trajectory. Because cumulative measles counts increase monotonically over time and retain the effects of previous outbreaks, the inclusion of outbreak-related covariates allowed these models to capture the major upward shifts associated with the 2014, 2019, and 2025 resurgence periods. As a result, all three count-regression models achieved excellent in-sample performance and generated nearly identical fitted trajectories. The similarity of these results is not surprising because the quasi-Poisson model shares the same mean structure as the Poisson model, while the estimated negative binomial dispersion parameter was effectively zero, causing the negative binomial model to converge toward the Poisson specification.
+\\~~\\
+Despite their strong historical fit, the count-regression models systematically underpredicted the cumulative burden already observed during 2026. This result highlights an important limitation of regression-based forecasting approaches that rely heavily on historically estimated outbreak effects. Since the models were trained using outbreak indicators representing previous resurgence periods, they implicitly assumed that future outbreaks would behave similarly to those observed in the past. The emerging 2026 outbreak appears to violate this assumption, suggesting the presence of a new outbreak regime that is not adequately captured by the existing outbreak covariates.
+\\~~\\
+In contrast, the ARIMAX grid-search model provided a more accurate held-out forecast than the count-regression models despite exhibiting weaker in-sample performance. This apparent paradox can be explained by the different sources of information used by the models. Whereas the count-regression approaches rely primarily on outbreak indicators and long-term trends, the ARIMAX grid-search model explicitly incorporates serial dependence through autoregressive terms in addition to a one-year outbreak-pulse indicator. Consequently, the model is able to utilize recent changes in the annual case trajectory and respond more effectively to emerging outbreak dynamics.
+\\~~\\
+The relative advantage of the ARIMAX grid-search model for short-term prediction is particularly evident in the 2026 validation exercise. The count-regression models forecast approximately \(82,842\) cumulative cases, implying only a modest increase beyond the 2025 total. In contrast, the ARIMAX grid-search model forecast \(83,148.71\) cumulative cases, closer to the observed cumulative total of \(84,565\) cases reported through May~1,~2026. This result suggests that recent transmission dynamics contained predictive information that could not be fully represented by outbreak indicators alone. Although the ARIMAX grid-search model also underpredicted the observed burden, its smaller forecasting error demonstrates the value of incorporating temporal dependence when forecasting rapidly evolving outbreaks.
+\\~~\\
+Taken together, these findings reveal an important tradeoff between explanatory performance and predictive performance. The count-regression models provide superior interpretability and historical fit because their parameters directly quantify the effects of major outbreak periods on cumulative disease burden. However, these models may be less responsive to sudden structural changes that differ from previously observed outbreaks. Conversely, the ARIMAX grid-search model sacrifices some interpretability and in-sample accuracy but gains the ability to adapt to recent trends and improve short-term forecasting performance. Therefore, the choice of forecasting framework depends on the primary objective of the analysis, whether explanation of historical disease dynamics or prediction of future outbreak behavior.
+\subsection{Model Strengths and Limitations}
+A major strength of this study is the systematic comparison of multiple statistical frameworks for forecasting cumulative measles burden within a unified analytical setting. By evaluating Poisson, quasi-Poisson, negative binomial, and ARIMAX grid-search models using the same surveillance dataset and outbreak indicators, the analysis provides a comprehensive assessment of both count-regression and time-series forecasting approaches. The count-regression models offer several advantages. The Poisson GLM provides a simple and highly interpretable framework in which model coefficients have direct multiplicative interpretations. The quasi-Poisson model relaxes the strict Poisson variance assumption while preserving the same mean structure, allowing the sensitivity of inference to dispersion assumptions to be evaluated. The negative binomial model provides a flexible alternative capable of accommodating overdispersion when present. In this study, however, the estimated negative binomial dispersion parameter was effectively zero, resulting in fitted values and forecasts that were nearly identical to those of the Poisson and quasi-Poisson models.
+The ARIMAX grid-search model complements the count-regression approaches by explicitly accounting for serial dependence in the annual measles series. Although its in-sample fit was weaker than that of the count-regression models, it produced a more accurate held-out forecast for 2026, demonstrating the value of incorporating temporal dependence when forecasting emerging outbreak activity. Several limitations should be acknowledged. First, the analysis relies on annual aggregated surveillance data, which may mask seasonal transmission patterns and within-year outbreak dynamics. Second, the models utilize outbreak indicators as explanatory variables but do not explicitly incorporate potentially important drivers of measles transmission such as vaccination coverage, exemption rates, population mobility, demographic characteristics, healthcare access, or socioeconomic conditions. Third, the relatively small number of annual observations limits the complexity of models that can be estimated reliably and reduces the statistical power available for model selection and inference, as reflected in the wide confidence interval around the outbreak-pulse coefficient in the revised ARIMAX model. Fourth, the primary out-of-sample validation relies on a single partial-year 2026 observation, which by itself provides limited evidence of forecasting performance; we addressed this limitation by supplementing it with rolling one-year-ahead validation over the 2016--2025 test period for all four models. Finally, because 2026 was intentionally withheld for validation, no dedicated 2026 outbreak indicator could be estimated, which likely contributed to the systematic underprediction observed across all forecasting approaches.
+\subsection{Comparison with Existing Studies}
+Previous studies of measles dynamics have focused primarily on mechanistic compartmental models, outbreak investigations, vaccination policy analyses, and assessments of herd immunity. These studies have provided important insights into transmission dynamics, vaccine effectiveness, and the factors contributing to measles resurgence. However, relatively few investigations have focused on statistical forecasting of cumulative measles burden in the post-elimination era of the United States.
+
+The findings of this study are consistent with a broader literature demonstrating that infectious disease surveillance data often exhibit temporal dependence and structural changes associated with outbreak events. Similar observations have been reported for influenza, dengue fever, COVID-19, and other communicable diseases, where both regression-based and time-series approaches have been used to improve forecasting performance.
+\textcolor{blue}{Additionally, recent advances in infectious disease forecasting have increasingly combined classical statistical methods with artificial intelligence and machine learning techniques to improve predictive performance and support public health decision-making. For example, Baker et al. \cite{Baker2025Pandemic} developed a comprehensive forecasting framework that compared ARIMA, Prophet, and LSTM models using COVID-19 data from New Zealand and its partner countries, demonstrating that adaptive, data-driven forecasting systems can provide valuable early warning information for epidemic preparedness.   Similarly, Baker et al. \cite{Baker2025Collaborative} proposed a collaborative machine learning framework for disease prediction that highlights the benefits of integrating complementary predictive models to enhance forecasting accuracy and reliability. These recent studies underscore the growing importance of robust forecasting methodologies for infectious diseases and provide further motivation for evaluating multiple statistical and time-series models in the present study.}
+
+This work contributes to the existing literature by directly comparing count-regression and time-series forecasting approaches while explicitly incorporating outbreak-related structural shifts into cumulative burden models. Unlike studies that focus solely on annual incidence, the present analysis emphasizes cumulative disease burden, thereby capturing the persistent impact of major outbreaks on long-term national trends. The results further demonstrate that outbreak indicators alone may be insufficient when a new outbreak regime emerges, as evidenced by the systematic underprediction of the 2026 burden across all models.
+
+
+\subsection{Concluding Remarks}~\label{sec:conclusion} 
+This study investigated the forecasting of cumulative measles burden in the United States using Poisson, quasi-Poisson, negative binomial, and ARIMAX grid-search models. The results demonstrate that each framework captures different aspects of the surveillance data and that no single model is uniformly superior across all performance criteria. The Poisson, quasi-Poisson, and negative binomial models provided excellent in-sample fit and yielded nearly identical fitted trajectories and forecasts. In contrast, the ARIMAX grid-search model incorporated temporal dependence and produced a more accurate held-out forecast for the 2026 validation period. Nevertheless, all four models underestimated the cumulative burden already observed by May~1,~2026, indicating that the ongoing outbreak cannot be adequately represented as a continuation of the 2025 outbreak effect alone. The forecasting results suggest that the 2026 resurgence represents a distinct and potentially more severe outbreak regime than those observed in recent years. The fact that the forecasted annual burden was effectively reached within the first four months of 2026 highlights the magnitude of the current outbreak. It underscores the limitations of relying solely on historical outbreak patterns for prediction. Thus, the findings emphasize the importance of combining epidemiological insight with statistical forecasting methods when assessing future disease burden. As additional data become available, models that explicitly account for the 2026 outbreak and incorporate relevant epidemiological drivers will likely provide more reliable forecasts and stronger support for public-health planning, vaccination policy development, and outbreak preparedness efforts in the United States.
+
+Several directions for future research emerge from this study. First, as additional surveillance data become available, the forecasting models should be re-estimated to incorporate a dedicated 2026 outbreak indicator and quantify the persistence of the current resurgence. Such analyses may improve forecasting accuracy and provide insight into whether the 2026 outbreak represents a temporary surge or a longer-term structural shift in measles transmission dynamics. Second, future studies should investigate count time-series methodologies specifically designed for epidemiological data, including generalized autoregressive moving average models, integer-valued autoregressive processes, dynamic negative binomial models, and state-space count models. These approaches may improve predictive performance while preserving the discrete nature of disease counts.
+
+Finally, extending the analysis to state-level or regional surveillance data would permit investigation of spatial heterogeneity in outbreak risk. Spatial and spatiotemporal modeling approaches could provide additional insight into localized transmission dynamics and support geographically targeted public-health interventions.
+
+
+%\newpage
+\section*{Conflict of Interest Statement}
+
+The authors declare that the research was conducted in the absence of any commercial or financial relationships that could be construed as a potential conflict of interest.
+
+
+
+\section*{Authors' Contributions}
+\textbf{AG}: Conceptualization, formal analysis, investigation, methodology, writing – original
+draft, writing – review and editing. 
+\textbf{CWC}: Formal analysis, supervision, writing – original
+draft, writing – review and editing. 
+\textbf{FBA}: Data curation, funding acquisition, writing – original
+draft, writing – review and editing. 
+\textbf{JO}: Formal analysis, investigation, methodology, writing -  review and editing. 
+All authors read, reviewed, and approved the final version of the manuscript.
+
+\section*{Funding}
+FBA was supported by the
+National Science Foundation, grant number SES2230117.%No funding received for this work.
+
+\section*{Acknowledgments}
+None
+\section*{Data Availability}
+The data used in this manuscript are referenced within the text and available upon request.   
+
+
+\bibliographystyle{Frontiers-Harvard} 
+
+\bibliography{references}
+
+
+
+\end{document}
